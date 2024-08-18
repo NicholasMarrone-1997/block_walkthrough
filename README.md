@@ -129,37 +129,28 @@ if args.verbose:
 ![image](https://github.com/user-attachments/assets/d8a22c13-61d5-411b-bf7a-84696af84516)
 Random SK: `58d5fb48b862bff237da736c231edcd4`
 
-I wasn't able to decrypt the traffic for this first user using the session ID : NTProofStr, so I did some research. Found this article: https://medium.com/tenable-techblog/decrypt-encrypted-stub-data-in-wireshark-deb132c076e7. So I instead tried decrypting NTLMSSP and it decrypted the SMB3 encrypted traffic:
-![image](https://github.com/user-attachments/assets/10f4dd0f-350c-4808-a2f5-8afaf1a66fb7)
-![image](https://github.com/user-attachments/assets/f920df8b-2b19-43e9-8b93-0bc006c4a35c)
+I wasn't able to decrypt the traffic for the first user using the session ID: NTProofStr. So, I did some research and found this article. Instead, I tried decrypting NTLMSSP, which successfully decrypted the SMB3 encrypted traffic.
+![image](https://github.com/user-attachments/assets/a822706f-6af5-4a11-bfbe-6aa12930a1c9)
+![image](https://github.com/user-attachments/assets/631ac89e-3be6-4c6f-ba41-78a7259ca418)
 
----
 
-and inside the once encrypted traffic we find...
-![image](https://github.com/user-attachments/assets/ccfe9d9a-35bd-47bc-bd7b-823210f93fc2)
+Inside the decrypted traffic, we find two csv files:
+![image](https://github.com/user-attachments/assets/19cf2f26-25b0-4534-8b10-07ef7cfc9abc)
 
----
 
-File -> Export Objects -> SMB
-![image](https://github.com/user-attachments/assets/f5e535af-2219-4670-931e-b0d945093fd0)
+I used File -> Export Objects -> SMB to extract the objects.
+![image](https://github.com/user-attachments/assets/1f9c8ce8-8861-4485-8967-abdef125ca59)
 
-Second user:
-![image](https://github.com/user-attachments/assets/138508a2-e37e-4cdd-83e2-ab499c170bc2)
 
-eshellstrop
-NT: 3f29138a04aadc19214e9c04028bf381
-
-we do same process before like we do in the first user to decrypt the connection but here the user eshellstrop hash is not crackable so what we gone do to modify our script to provide hash in place of password so i modify it
+Second User
+For the second user, the hash 3f29138a04aadc19214e9c04028bf381 was not crackable. Therefore, I modified the script to provide the hash in place of the password:
 `python3 randomsessionkey.py -u eshellstrop -d WORKGROUP -H 3f29138a04aadc19214e9c04028bf381 -n 0ca6227a4f00b9654a48908c4801a0ac -k c24f5102a22d286336aac2dfa4dc2e04 -v`
 
----
+The output was:
+`Random SK: facfbdf010d00aa2574c7c41201099e8`
 
-![image](https://github.com/user-attachments/assets/d280d595-af84-449d-b578-c88127d0cb75)
-Random SK: facfbdf010d00aa2574c7c41201099e8
+We then used the random SK value, placed it in the session key and session ID from Wireshark. Remember, this value is in hex and needs to be converted from big endian to little endian.
+![image](https://github.com/user-attachments/assets/cda85d7b-a437-410c-9c63-da0c6a799d1f)
 
-then like before we do the random sk value put in session key and session id from the wireshark don’t forget it placed in hex value and little endian means we should reverse it
 
-![image](https://github.com/user-attachments/assets/f40f2c14-4b8a-4ef3-bd7e-60766b7e0f2f)
-Big endian -> little endian
-
-This decrypted the other csv file so I exported it and opened it
+This decrypted the CSV file, which I exported and opened and found the final flag
