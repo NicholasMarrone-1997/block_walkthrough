@@ -129,9 +129,7 @@ if args.verbose:
 ![image](https://github.com/user-attachments/assets/d8a22c13-61d5-411b-bf7a-84696af84516)
 Random SK: `58d5fb48b862bff237da736c231edcd4`
 
-I wasn't able to decrypt the traffic for this first user using the session ID : NTProofStr, so I did some research.
-Found this article: https://medium.com/tenable-techblog/decrypt-encrypted-stub-data-in-wireshark-deb132c076e7. 
-So I instead tried decrypting NTLMSSP and it decrypted the SMB3 encrypted traffic:
+I wasn't able to decrypt the traffic for this first user using the session ID : NTProofStr, so I did some research. Found this article: https://medium.com/tenable-techblog/decrypt-encrypted-stub-data-in-wireshark-deb132c076e7. So I instead tried decrypting NTLMSSP and it decrypted the SMB3 encrypted traffic:
 ![image](https://github.com/user-attachments/assets/10f4dd0f-350c-4808-a2f5-8afaf1a66fb7)
 ![image](https://github.com/user-attachments/assets/f920df8b-2b19-43e9-8b93-0bc006c4a35c)
 
