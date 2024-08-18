@@ -16,10 +16,11 @@ I dumped the contents of the lsass.DMP with `pypkatz lsa minidump lsass.DMP`
 
 Found a hashed password, so I tried cracking it with John:
 `john --format=NT --rules -w=/usr/share/wordlists/rockyou.txt password.txt`
-![[Pasted image 20240817180711.png]]
+![image](https://github.com/user-attachments/assets/38a088f7-34c4-409c-935e-7b48f5cfd0de)
+
 So creds are mrealman : Blockbuster1
 
-![[Pasted image 20240817181253.png]]
+![image](https://github.com/user-attachments/assets/859fb524-4389-4529-8cab-2833a9dc312d)
 I believe that something is hiding in the encrypted smb3 traffic so i decided googling how to decrypt smb3 :
 https://medium.com/maverislabs/decrypting-smb3-traffic-with-just-a-pcap-absolutely-maybe-712ed23ff6a2
 
@@ -61,75 +62,71 @@ print(f"Key Exchange Key (NTLMv2 Session Base Key): {key_exchange_key_hex}")
 
 Ran the following code to generate the Random SK which can be used to decrypt the encrypted SMB traffic
 ```python
-|   |
-|---|
-|import hashlib|
-||import hmac|
-||import argparse|
-|||
-||#stolen from impacket. Thank you all for your wonderful contributions to the community|
-||try:|
-||from Cryptodome.Cipher import ARC4|
-||from Cryptodome.Cipher import DES|
-||from Cryptodome.Hash import MD4|
-||except Exception:|
-||LOG.critical("Warning: You don't have any crypto installed. You need pycryptodomex")|
-||LOG.critical("See https://pypi.org/project/pycryptodomex/")|
-|||
-||def generateEncryptedSessionKey(keyExchangeKey, exportedSessionKey):|
-||cipher = ARC4.new(keyExchangeKey)|
-||cipher_encrypt = cipher.encrypt|
-|||
-||sessionKey = cipher_encrypt(exportedSessionKey)|
-||return sessionKey|
-||###|
-|||
-||parser = argparse.ArgumentParser(description="Calculate the Random Session Key based on data from a PCAP (maybe).")|
-||parser.add_argument("-u","--user",required=True,help="User name")|
-||parser.add_argument("-d","--domain",required=True, help="Domain name")|
-||parser.add_argument("-p","--password",required=True,help="Password of User")|
-||parser.add_argument("-n","--ntproofstr",required=True,help="NTProofStr. This can be found in PCAP (provide Hex Stream)")|
-||parser.add_argument("-k","--key",required=True,help="Encrypted Session Key. This can be found in PCAP (provide Hex Stream)")|
-||parser.add_argument("-v", "--verbose", action="store_true", help="increase output verbosity")|
-|||
-||args = parser.parse_args()|
-|||
-||#Upper Case User and Domain|
-||user = str(args.user).upper().encode('utf-16le')|
-||domain = str(args.domain).upper().encode('utf-16le')|
-|||
-||#Create 'NTLM' Hash of password|
-||passw = args.password.encode('utf-16le')|
-||hash1 = hashlib.new('md4', passw)|
-||password = hash1.digest()|
-|||
-||#Calculate the ResponseNTKey|
-||h = hmac.new(password, digestmod=hashlib.md5)|
-||h.update(user+domain)|
-||respNTKey = h.digest()|
-|||
-||#Use NTProofSTR and ResponseNTKey to calculate Key Excahnge Key|
-||NTproofStr = args.ntproofstr.decode('hex')|
-||h = hmac.new(respNTKey, digestmod=hashlib.md5)|
-||h.update(NTproofStr)|
-||KeyExchKey = h.digest()|
-|||
-||#Calculate the Random Session Key by decrypting Encrypted Session Key with Key Exchange Key via RC4|
-||RsessKey = generateEncryptedSessionKey(KeyExchKey,args.key.decode('hex'))|
-|||
-||if args.verbose:|
-||print "USER WORK: " + user + "" + domain|
-||print "PASS HASH: " + password.encode('hex')|
-||print "RESP NT: " + respNTKey.encode('hex')|
-||print "NT PROOF: " + NTproofStr.encode('hex')|
-||print "KeyExKey: " + KeyExchKey.encode('hex')|
-||print "Random SK: " + RsessKey.encode('hex')|
+import hashlib
+import hmac
+import argparse
+
+# Stolen from impacket. Thank you all for your wonderful contributions to the community
+try:
+    from Cryptodome.Cipher import ARC4
+    from Cryptodome.Cipher import DES
+    from Cryptodome.Hash import MD4
+except Exception:
+    LOG.critical("Warning: You don't have any crypto installed. You need pycryptodomex")
+    LOG.critical("See https://pypi.org/project/pycryptodomex/")
+
+def generateEncryptedSessionKey(keyExchangeKey, exportedSessionKey):
+    cipher = ARC4.new(keyExchangeKey)
+    cipher_encrypt = cipher.encrypt
+    
+    sessionKey = cipher_encrypt(exportedSessionKey)
+    return sessionKey
+
+parser = argparse.ArgumentParser(description="Calculate the Random Session Key based on data from a PCAP (maybe).")
+parser.add_argument("-u", "--user", required=True, help="User name")
+parser.add_argument("-d", "--domain", required=True, help="Domain name")
+parser.add_argument("-p", "--password", required=True, help="Password of User")
+parser.add_argument("-n", "--ntproofstr", required=True, help="NTProofStr. This can be found in PCAP (provide Hex Stream)")
+parser.add_argument("-k", "--key", required=True, help="Encrypted Session Key. This can be found in PCAP (provide Hex Stream)")
+parser.add_argument("-v", "--verbose", action="store_true", help="Increase output verbosity")
+
+args = parser.parse_args()
+
+# Upper Case User and Domain
+user = str(args.user).upper().encode('utf-16le')
+domain = str(args.domain).upper().encode('utf-16le')
+
+# Create 'NTLM' Hash of password
+passw = args.password.encode('utf-16le')
+hash1 = hashlib.new('md4', passw)
+password = hash1.digest()
+
+# Calculate the ResponseNTKey
+h = hmac.new(password, digestmod=hashlib.md5)
+h.update(user + domain)
+respNTKey = h.digest()
+
+# Use NTProofSTR and ResponseNTKey to calculate Key Exchange Key
+NTproofStr = bytes.fromhex(args.ntproofstr)
+h = hmac.new(respNTKey, digestmod=hashlib.md5)
+h.update(NTproofStr)
+KeyExchKey = h.digest()
+
+# Calculate the Random Session Key by decrypting Encrypted Session Key with Key Exchange Key via RC4
+RsessKey = generateEncryptedSessionKey(KeyExchKey, bytes.fromhex(args.key))
+
+if args.verbose:
+    print("USER WORK: " + user.decode('utf-16le') + "" + domain.decode('utf-16le'))
+    print("PASS HASH: " + password.hex())
+    print("RESP NT: " + respNTKey.hex())
+    print("NT PROOF: " + NTproofStr.hex())
+    print("KeyExKey: " + KeyExchKey.hex())
+    print("Random SK: " + RsessKey.hex())
 ```
 
 `python3 randomsessionkey.py -u mrealman -d BLOCK -p Blockbuster1 -n 16e816dead16d4ca7d5d6dee4a015c14 -k d541c491e319df06e2904e622049b034 -v`
-![[Pasted image 20240818115502.png]]
+![image](https://github.com/user-attachments/assets/d8a22c13-61d5-411b-bf7a-84696af84516)
 Random SK: `58d5fb48b862bff237da736c231edcd4`
- - Kind of hit a dead end with this
 
 Found this article: https://medium.com/tenable-techblog/decrypt-encrypted-stub-data-in-wireshark-deb132c076e7
 ![[Pasted image 20240818121600.png]]
@@ -151,6 +148,7 @@ Random SK: facfbdf010d00aa2574c7c41201099e8
 
 then like before we do the random sk value put in session key and session id from the wireshark don’t forget it placed in hex value and little endian means we should reverse it
 
-![](https://miro.medium.com/v2/resize:fit:770/1*58jobTx53th9lxGxc-_tXw.png)Big endian -> little endian
+![image](https://github.com/user-attachments/assets/bcf435ac-e5b3-46ab-80e7-37672d1f58ad)
+Big endian -> little endian
 
 This decrypted the other csv file so I exported it and opened it
