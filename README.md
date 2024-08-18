@@ -134,9 +134,13 @@ Found this article: https://medium.com/tenable-techblog/decrypt-encrypted-stub-d
 So I instead tried decrypting NTLMSSP and it decrypted the SMB3 encrypted traffic:
 ![image](https://github.com/user-attachments/assets/10f4dd0f-350c-4808-a2f5-8afaf1a66fb7)
 ![image](https://github.com/user-attachments/assets/f920df8b-2b19-43e9-8b93-0bc006c4a35c)
+
+---
+
 and inside the once encrypted traffic we find...
 ![image](https://github.com/user-attachments/assets/ccfe9d9a-35bd-47bc-bd7b-823210f93fc2)
 
+---
 
 File -> Export Objects -> SMB
 ![image](https://github.com/user-attachments/assets/f5e535af-2219-4670-931e-b0d945093fd0)
@@ -149,6 +153,8 @@ NT: 3f29138a04aadc19214e9c04028bf381
 
 we do same process before like we do in the first user to decrypt the connection but here the user eshellstrop hash is not crackable so what we gone do to modify our script to provide hash in place of password so i modify it
 `python3 randomsessionkey.py -u eshellstrop -d WORKGROUP -H 3f29138a04aadc19214e9c04028bf381 -n 0ca6227a4f00b9654a48908c4801a0ac -k c24f5102a22d286336aac2dfa4dc2e04 -v`
+
+---
 
 ![image](https://github.com/user-attachments/assets/d280d595-af84-449d-b578-c88127d0cb75)
 Random SK: facfbdf010d00aa2574c7c41201099e8
