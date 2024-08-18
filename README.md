@@ -130,7 +130,8 @@ if args.verbose:
 Random SK: `58d5fb48b862bff237da736c231edcd4`
 
 Found this article: https://medium.com/tenable-techblog/decrypt-encrypted-stub-data-in-wireshark-deb132c076e7
-![Uploading image.png…]()
+![image](https://github.com/user-attachments/assets/10f4dd0f-350c-4808-a2f5-8afaf1a66fb7)
+
 I instead tried decrypting NTLMSSP and it decrypted the SMB3 encrypted traffic
 ![image](https://github.com/user-attachments/assets/f920df8b-2b19-43e9-8b93-0bc006c4a35c)
 ![image](https://github.com/user-attachments/assets/ccfe9d9a-35bd-47bc-bd7b-823210f93fc2)
