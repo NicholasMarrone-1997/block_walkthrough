@@ -11,7 +11,8 @@ From wireshark analysis, we found that the username of the first person that acc
 
 I dumped the contents of the lsass.DMP with `pypkatz lsa minidump lsass.DMP`
 
-![[Pasted image 20240817180628.png]]
+![image](https://github.com/user-attachments/assets/6c99a9a7-2ada-4964-b48c-04b178f75fe1)
+
 
 Found a hashed password, so I tried cracking it with John:
 `john --format=NT --rules -w=/usr/share/wordlists/rockyou.txt password.txt`
