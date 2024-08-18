@@ -28,6 +28,7 @@ https://medium.com/maverislabs/decrypting-smb3-traffic-with-just-a-pcap-absolute
 
 What's needed:
 ```
+-u, -d, -p, -n, -k, -v
 -User’s password or NTLM hash  
 -User’s domain  
 -User’s username  
@@ -36,8 +37,8 @@ What's needed:
 -Encrypted Session Key
 ```
 
--u, -d, -p, -n, -k, -v
-
+Locating NTProofStr: Find the SMB traffic and the NTLMSSP Authentication Message within it
+ - security blob -> gss-api -> simple protected negotiation -> negTokenTarg -> NTLM Secure Service Provider -> Lan Manager Response -> NTLM Response -> NTLMv2 Response 
 NTProofStr: `16e816dead16d4ca7d5d6dee4a015c14`
 
 Can calculate key exchange key with the following code:
